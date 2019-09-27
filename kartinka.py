@@ -35,17 +35,6 @@ def ellipse (x,y,x1,y1,a):
                 point(i,j)
 
 
-def krivaya1(a,b,x,y,povorot):
-    list1 = []
-    if povorot==0:
-        for i in range(int(-a), int(a), 1):
-            z3 = y + b * ((1 - (i / a) ** 2) ** (0.5))
-            list1.append((i + x, z3))
-    else:
-        for i in range(int(a),int(-a),-1):
-            z4 = y - b * ((1 - (i / a) ** 2) ** (0.5))
-            list1.append((i + x, z4))
-    polyline(list1)
 def klubok(size,lr,x,y):
     brushColor(153,153,153)
     circle(319*size+x,520*size+y, 28*size)
