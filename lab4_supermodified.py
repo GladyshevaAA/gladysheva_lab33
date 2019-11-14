@@ -11,7 +11,15 @@ height = 700
 c.pack()
 root.geometry('700x700')
 colors = ['red','orange','yellow','green','blue']
-
+mistake=0
+def Name():
+    print('NAME:')
+    name = str(input())
+    file = open('Top.txt', 'a')
+    file.write(name)
+    file.write(' - ')
+    file.close()
+Name()
 
 class Ball:
     def __init__(self):
@@ -66,26 +74,46 @@ def Anime():
 
 
 def click (event):
-    global ex, ey, Num
+    global ex, ey, Num,mistake,m
     ex = event.x
     ey = event.y
+
     for i in range (m):
+        mistake+=1
         if (ex - balls[i].x)**2 + (ey - balls[i].y)**2 <= balls[i].r**2:
             Num += 1
+            c.delete(balls[i].obj)
+            balls.remove(balls[i])
+            balls.append(Ball())
             Text = "Score:" + str(Num)
             label1 = Label(root, text=Text)
-            label1_x = 350
-            label1_y = 200
+            label1_x = 600
+            label1_y =20
             label1.place(x=label1_x, y=label1_y)
+            mistake-=m
+        if mistake == m*3:
+            root.quit()
+            print('Score:'+str(Num))
+            file = open('Players.txt', 'a')
+            file.write(str(Num))
+            file.write('\n')
+            file.close()
+def myf():
+    global score
+    file = open('Players.txt', 'a')
+    file.write(str(score))
+    file.write('\n')
+    file.close()
+    root.destroy()
+
 
 Anime()
 c.bind('<Button-1>', click)
 Text = "Score:" + str(Num)
 label1 = Label(root, text=Text)
-label1_x = 350
-label1_y = 200
+label1_x = 600
+label1_y = 20
 label1.place(x=label1_x, y=label1_y)
 mainloop()
 
-print("Total score:")
-print(Num)
+
