@@ -1,0 +1,138 @@
+from tkinter import *
+import math
+import array
+
+root = Tk()
+from random import *
+
+c = Canvas(root, width=600, height=800, bg='white')
+width = 600
+height = 800
+c.pack()
+root.geometry('600x800')
+v_0 = 10  # скорость при отскоке от платформы
+Level = 300  # линия, выше которой не поднимается изображени дудла
+gen_level = -800 # линия, до которой генерятся платформы
+P_Width = 80  # ширина платформы
+P_Height = 3  # толщина платформы
+platforms = []  # это будет массив платформ
+change = False  # переменная отвечает за тип движения обЪектов
+d_x = 0  # перменные, которые помнят информацию про дудла
+d_y = 0
+d_vy = 0
+p_lim=50 #вероятность появления платформы
+
+# Где-то тут должна быть генерация первых платформ (начальные условия)
+
+
+c.create_text(400, 250, text="Click Right Mouse Button to\nSTART THE GAME", justify=CENTER, font="Impact 40")
+
+
+def doodle_draw(x, y):
+    c.create_oval(x + 20, y - 40, x + 40, y - 20, fill="blue")
+    c.create_rectangle(x, y - 20, x + 60, y, fill="green")
+    c.create_line(x, y, x, y + 10)
+    c.create_line(x + 20, y, x, y + 10)
+    c.create_line(x + 40, y, x, y + 10)
+    c.create_line(x + 60, y, x, y + 10)
+
+
+class Doodle():
+    def __init__(self):
+        self.x = 50
+        self.y = 30
+        self.vx = 20
+        self.vy = 0
+        self.g = 10
+        self.max_H = self.y - (self.vy ^ 2) / (2 * self.g)
+        self.obj = doodle_draw(self.x, self.y)
+
+    def Move_y(self):
+        self.y -= self.vy
+        self.vy -= self.g
+
+        if change == False:
+            c.move(self.obj, 0, -self.vy)
+
+    def MoveLeft(self):
+        c.move(self.obj, -self.vx, 0)
+        self.x -= self.vx
+
+    def MoveRight(self):
+        c.move(self.obj, self.vx, 0)
+        self.x += self.vx
+
+
+    def jump(self):
+        for p in platforms:
+            if self.vy <= 0 and (self.x >= p.x and self.x <= p.x + p.width) and self.y >= p.y:
+                self.vy = v_0
+
+
+class Platform():
+    def __init__(self):
+        self.width = P_Width
+        self.height = P_Height
+        self.x = -10
+        self.y = -10
+        self.vx = 0
+        self.vy = 0
+        self.type = 1
+        self.life = 1
+        if self.type == 1:
+            self.color = "green"
+        elif self.type == 2:
+            self.color = "blue"
+        elif self.type == 3:
+            self.color = "red"
+        self.obj = c.create_(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
+
+    def Move(self):
+        if self.x + self.width >= 600 and self.vx > 0:
+            self.vx = -self.vx
+            self.x = 599
+        if self.x <= 0 and self.vx < 0:
+            self.vx = -self.vx
+            self.x = 1
+
+
+
+def scr_upd():
+    if doodle_y <= Level:
+        doodle.upd()
+#функция,которая гененрирует платформы во время игры
+def Generate_extra_platforms():
+    n = 1
+    h = 10
+    if doodle.max_H > level:
+        while h * (n + 1) < delta:
+            for i in range(1, 10):
+                a = randrange(1, 100)
+                tip=choice(1,1,1,2,3)
+                if a > p_lim:
+                    plat.append(Platform())
+                    plat[l].type() = tip
+                    l=len(plat)-1
+                    plat[l].x = i * P_Width
+                    plat[l].y = rnd(-h * n, -h * n+5)
+        n += 1
+#функция,которая генерирует платформы в начале игры:
+def Genarate_platforms():
+    for i in range(1,20):
+        for k in range(1,10):
+            b = randrange(1, 100)
+            if b > p_lim:
+                plat.append(Platform())
+                l = len(plat) - 1
+                plat[l].x = i * P_Width
+                plat[l].y = rnd(i *h-10,i*h)
+
+
+
+doodle = Doodle()
+
+
+
+
+
+canv.bind('<Button-3>', start_game)  # тут надо замутитб функцию котораяначинает игру
