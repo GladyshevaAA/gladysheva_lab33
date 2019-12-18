@@ -1,0 +1,240 @@
+from tkinter import *
+from random import *
+
+root = Tk()
+
+c = Canvas(root, width=800, height=800, bg='white')
+c.pack()
+root.geometry('600x800')
+v_0 = 100  # скорость при отскоке от платформы
+Level = 400  # линия, выше которой не поднимается изображение дудла на экране
+P_Width = 80  # ширина платформы
+P_Height = 5  # толщина платформы
+change = False  # переменная отвечает за тип движения объектов (true - движутся платформы, false - дудл)
+start = True  # отвечает за начало игры
+pause = False  # отвечает за приостановку игры
+d_vy = 0  # перменная будет хранить информацию про скорость дудла на время паузы
+g_0 = 0  # будет хранить ускорение на время паузы
+p_lim = 97  # начальная вероятность появления платформы
+
+f = open('map', 'r')
+
+# функция рисует иконку дудла
+def doodle_draw(x, y):
+    c.create_oval(x + 15, y - 35, x + 45, y - 5, tags="doodle", fill="blue")
+    c.create_rectangle(x, y - 20, x + 60, y, tags="doodle", fill="green")
+    c.create_line(x, y, x, y + 10, tags="doodle")
+    c.create_line(x + 20, y, x + 20, y + 10, tags="doodle")
+    c.create_line(x + 40, y, x + 40, y + 10, tags="doodle")
+    c.create_line(x + 60, y, x + 60, y + 10, tags="doodle")
+
+
+# класс дудла
+class Doodle():
+
+    def __init__(self):
+        self.x = 300
+        self.y = 600
+        self.vx = 0
+        self.vy = 0
+        self.g = 0
+        self.life = True
+        if self.g != 0:
+            self.max_H = self.y - (self.vy ^ 2) / (2 * self.g)
+        else:
+            self.max_H = self.y
+        doodle_draw(self.x, self.y)
+        print('doodle')
+
+    def upd(self):
+        self.y -= self.vy
+        self.vy -= self.g
+
+        if self.y > 800:
+            self.life = False
+        if not change:
+            print(self.y)
+            c.move("doodle", 0, -self.vy)
+
+    def move_left(self):
+        if self.x > 800:
+            self.x -= self.vx + 800
+        elif self.x < 0:
+            self.x -= self.vx - 800
+        else:
+            self.x -= self.vx
+        c.move("doodle", - self.vx, 0)
+
+    def move_right(self):
+        if self.x > 800:
+            self.x += self.vx - 800
+        elif self.x < 0:
+            self.x += self.vx + 800
+        else:
+            self.x += self.vx
+        c.move("doodle", self.vx, 0)
+
+
+# собственно его единственный экземпляр
+doodle = Doodle()
+
+
+# класс платформ
+class Platform():
+
+    def __init__(self, x1, y1):
+        self.width = P_Width
+        self.height = P_Height
+        self.x = x1
+        self.y = y1
+        self.vx = 0
+        self.vy = 0
+        self.life = True
+        self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='green')
+
+    def upd(self):
+        if self.y > 800:
+            self.life = False
+        if self.x + self.width >= 600 and self.vx > 0:
+            self.vx = -self.vx
+            self.x = 599
+        if self.x <= 0 and self.vx < 0:
+            self.vx = -self.vx
+            self.x = 1
+        self.x += self.vx
+        c.move(self.obj, self.vx, 0)
+        if change:
+            self.vy = -doodle.vy
+            self.y -= self.vy
+            c.move(self.obj, 0, -self.vy)
+
+
+# это массив платформ
+platforms = []
+# это массив скоростей платформ на время паузы - [vx, vy]
+platforms_data = [[0, 0], [1, 1]]
+
+
+# функция,которая гененрирует платформы во время игры
+def generate_extra_platforms():
+    n = 1
+    h = 10
+    if doodle.max_H < Level:
+        while h * (n + 1) < (Level - doodle.max_H):
+            for i in range(1, 10):
+                a = randrange(1, 100)
+                if a > p_lim:
+                    platforms.append(Platform())
+                    l = len(platforms) - 1
+                    platforms[l].x = (i - 1) * P_Width
+                    platforms[l].y = randrange(-h * i, -h * i + 5)
+                    print("fopf = 8")
+                    print(platforms[l].x, 'ыкс')
+                    print(platforms[l].y, 'ыгрек')
+            n += 1
+
+
+# функция,которая генерирует платформы в начале игры:
+def generate_platforms():
+    global P_Width, P_Height
+    h = 10
+    for i in range(1, 80):
+        for k in range(1, 10):
+            a = randrange(1, 100)
+            if a > p_lim:
+                platforms.append(Platform((k - 1) * P_Width, (i - 1) * h))
+                l = len(platforms) - 1
+
+# проверяет, напрыгнул ли дудл на платформу, а ещё удаляет платформы ниже экрана (по всем платформам)
+def jump_check():
+    for p in platforms:
+        if not p.life:
+            c.delete(p.obj)
+            platforms.remove(p)
+        elif doodle.vy <= 0 and (doodle.x >= p.x and doodle.x <= p.x + p.width) and doodle.y == p.y:
+            doodle.vy = v_0
+
+
+# функция, которая проверяет, что должно двигаться : дудл или платформы
+def change_check():
+    global change
+    if (doodle.y >= Level) and (doodle.vy >= 0):
+        change = True
+    else:
+        change = False
+
+
+# движение всех объектов на экране
+def scr_upd():
+    doodle.upd()
+    for p in platforms:
+        p.upd()
+
+
+
+# запуск игры
+def start_game():
+    global start
+    if not start:
+        c.delete(ALL)
+        generate_platforms()  # функция, которая генерит платформы в начале
+        start = True
+        game_main()
+    else:
+        c.delete(ALL)
+
+
+# приостановка и возобновление игры
+def pause_game(event):
+    global doodle, pause, d_vy, g_0, platforms, platforms_data
+    if start and pause:
+        for i in range(0, len(platforms) - 1):
+            platforms[i].vx = platforms_data[i][1]
+            platforms_data[i][2] = platforms[i].vy
+            platforms[i].vx = 0
+            platforms[i].vy = 0
+        doodle.vy = d_vy
+        doodle.g = g_0
+        pause = False
+    elif start and not pause:
+        g_0 = doodle.g
+        d_vy = doodle.vy
+        doodle.vx = 0
+        doodle.vy = 0
+        doodle.g = 0
+        for i in range(0, len(platforms) - 1):
+            platforms_data[i][1] = platforms[i].vx
+            platforms_data[i][2] = platforms[i].vy
+            platforms[i].vx = 0
+            platforms[i].vy = 0
+        pause = True
+
+
+# выход из игры
+def stop_game(event):
+    global start
+    if start:
+        c.delete(ALL)
+        start = False
+
+
+# основной ход игры ПРОБЛЕМА - не знаю, как реализовать
+def game_main():
+    global start, v_0, g_0, d_vy, d_x, d_y, p_lim, Level
+    if start:
+        c.bind('a', doodle.move_left)
+        c.bind('d', doodle.move_right)
+
+        doodle.vy =1
+        doodle.g =0
+        while doodle.life:
+            generate_platforms()  # функция, которая генерит платформы
+            jump_check()
+            change_check()
+            scr_upd()  # функция, которая занимается движением всего на экране
+            c.update()
+
+generate_platforms()
+#game_main()
+mainloop()
+f.close()
