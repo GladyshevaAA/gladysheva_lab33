@@ -147,3 +147,79 @@ def change_check():
         if H < Level:
             score += int((Level - H) / 8)
         doodle_stop = False
+
+
+# движение всех объектов на экране
+def scr_upd():
+    doodle.upd()
+    if doodle_stop:
+        for p in platforms:
+            p.upd()
+    else:
+        for p in platforms:
+            p.usl()
+    c.update()
+
+score=0
+
+
+# запуск игры
+def start_game():
+    global start
+    if not start:
+        c.delete(ALL)
+        generate_platforms()  # функция, которая генерит платформы в начале
+        start = True
+        game_main()
+    else:
+        c.delete(ALL)
+
+
+# приостановка и возобновление игры
+def pause_game(event):
+    global doodle, pause, d_vy, g_0, platforms, platforms_data
+    if start and pause:
+        pause = False
+    elif start and not pause:
+        pause = True
+
+
+# выход из игры
+def stop_game(event):
+    global start
+    if start:
+        c.delete(ALL)
+        start = False
+
+
+def key(event):
+    if (event.char == 'a'):
+        doodle.move_left()
+    if (event.char == 'd'):
+        doodle.move_right()
+
+
+# основной ход игры ПРОБЛЕМА - не знаю, как реализовать
+def game_main():
+    global start, v_0, p_lim, Level, checker
+    if start:
+        c.bind('<Key>', key)
+        generate_platforms()
+        doodle.vy = v_0
+        doodle.g = 0.035
+        while doodle.life:
+            Text = "Score:" + str(score)
+            label1 = Label(root, text=Text)
+            label1_x = 600
+            label1_y = 50
+            label1.place(x=label1_x, y=label1_y)
+            jump_check()
+            change_check()
+            generate_extra_platforms()
+            if not pause:
+                scr_upd()  # функция, которая занимается движением всего на экране
+
+
+c.focus_set()
+game_main()
+mainloop()
