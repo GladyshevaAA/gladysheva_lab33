@@ -125,7 +125,10 @@ while check:
                     b = randrange(1, 100)
                     if b > 20:
                         tip = 1
-        ddddd)
+                    else:
+                        tip = 2
+                    if a > p_lim:
+                        platforms.append(Platform(k * P_Width, l - i * h,tip))
 
 
     # функция,которая генерирует платформы в начале игры:
