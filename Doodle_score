@@ -2,6 +2,7 @@ from tkinter import *
 from random import *
 from time import *
 check = True
+Res = open("Res.txt", "a", newline="\n")
 while check:
     root = Tk()
     root.iconify()
@@ -89,7 +90,8 @@ while check:
                 self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='green')
             if self.type == 2:
                 self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='brown')
-
+            if self.type == 3:
+                self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='blue')
         def upd(self):
             if self.y > 800:
                 self.life = False
@@ -122,10 +124,12 @@ while check:
             for i in range(0, 20):
                 for k in range(0, 10):
                     a = randrange(0, 1000)
-                    b = randrange(1, 100)
-                    if b > 20:
-                        tip = 1
-                    else:
+                    b = randrange(0,100)
+                    if b>90 :
+                        tip=3
+                    elif b<90 and b>20:
+                        tip=1
+                    elif b<20:
                         tip = 2
                     if a > p_lim:
                         platforms.append(Platform(k * P_Width, l - i * h,tip))
@@ -151,10 +155,14 @@ while check:
     def jump_check():
         for p in platforms:
             if (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
-                    p.y - 10 <= doodle.y <= p.y + P_Height) and p.type != 2:
+                    p.y - 10 <= doodle.y <= p.y + P_Height) and p.type ==1:
                 doodle.vy = v_0
+            if (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
+                    p.y - 10 <= doodle.y <= p.y + P_Height) and p.type ==3:
+                doodle.vy = v_0*3
             elif (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
                     p.y - 10 <= doodle.y <= p.y + P_Height) and p.type == 2:
+                doodle.vy = v_0
                 platforms.remove(p)
                 c.delete(p.obj)
 
@@ -228,7 +236,6 @@ while check:
             if not doodle.life:
                 root.destroy()
                 Res.write(str(score) + ' ')
-                Res.close()
                 lose = Tk()
                 lose.geometry('300x300')
                 lose.configure(background='blue')
@@ -258,8 +265,6 @@ while check:
                 button_lose.bind('<Button-1>', BTM)
 
 
-    Res = open("Res.txt", "a", newline="\n")
-
 
     def Menu():
         global check  # Счетчик для проверки на сохранение имени
@@ -287,6 +292,14 @@ while check:
         button_save.place(x=60, y=130)
         lbl_gl = Label(window, font='Times 14', fg="black", bg="blue")  # Пожелание хорошей игры
         lbl_gl.place(x=20, y=60)
+
+        def myf():
+            global check
+            window.destroy()
+            root.destroy()
+            check = False
+            Res.write('\n')
+        window.protocol('WM_DELETE_WINDOW', myf)
 
         if (check == 1):  # Проверка на дибила, если имя не записал
             lbl_name.destroy()
@@ -359,3 +372,4 @@ while check:
 
     Menu()  # вызывает в самом начале меню для игры
     root.mainloop()
+Res.close()
